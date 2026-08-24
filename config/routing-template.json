@@ -27,6 +27,8 @@
 
   "DirectSites": [
     "geosite:private",
+    "domain:2ip.io",
+    "domain:2ip.ru",
     "geosite:russia-inside",
     "geosite:category-ru"
   ],
