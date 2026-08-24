@@ -12,7 +12,7 @@
   "DomesticDNSIP": "77.88.8.8",
   "Geositeurl": "https://cdn.jsdelivr.net/gh/apostler/happ-routing@main/release/geosite.dat",
   "Geoipurl": "https://cdn.jsdelivr.net/gh/apostler/happ-routing@main/release/geoip.dat",
-  "LastUpdated": "1787604471",
+  "LastUpdated": "1787605199",
   "DnsHosts": {
     "lkfl2.nalog.ru": "213.24.64.175",
     "lknpd.nalog.ru": "213.24.64.181"
@@ -20,6 +20,8 @@
   "RouteOrder": "block-proxy-direct",
   "DirectSites": [
     "geosite:private",
+    "domain:2ip.io",
+    "domain:2ip.ru",
     "geosite:russia-inside",
     "geosite:category-ru"
   ],
