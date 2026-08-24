@@ -14,8 +14,8 @@
   "DomesticDNSDomain": "https://77.88.8.8/dns-query",
   "DomesticDNSIP": "77.88.8.8",
 
-  "Geositeurl": "{{auto: подставляется scripts/build_routing.py}}",
-  "Geoipurl": "{{auto: подставляется scripts/build_routing.py}}",
+  "Geositeurl": "{{auto}}",
+  "Geoipurl": "{{auto}}",
   "LastUpdated": "{{auto}}",
 
   "DnsHosts": {
@@ -27,10 +27,36 @@
 
   "DirectSites": [
     "geosite:private",
+
     "domain:2ip.io",
     "domain:2ip.ru",
+
     "geosite:russia-inside",
-    "geosite:category-ru"
+    "geosite:category-ru",
+    "geosite:whitelist",
+
+    "domain:gosuslugi.ru",
+    "domain:mos.ru",
+    "domain:nalog.ru",
+    "domain:vk.com",
+    "domain:vk.ru",
+    "domain:yandex.ru",
+    "domain:yandex.com",
+    "domain:ya.ru",
+    "domain:mail.ru",
+    "domain:ok.ru",
+    "domain:rutube.ru",
+    "domain:avito.ru",
+
+    "geosite:microsoft",
+    "geosite:apple",
+    "geosite:steam",
+    "geosite:epicgames",
+    "geosite:riot",
+    "geosite:escapefromtarkov",
+    "geosite:faceit",
+    "geosite:twitch",
+    "geosite:pinterest"
   ],
 
   "DirectIp": [
@@ -39,7 +65,43 @@
     "geoip:direct"
   ],
 
-  "ProxySites": [],
+  "ProxySites": [
+    "geosite:youtube",
+    "geosite:google-play",
+    "geosite:github",
+    "geosite:telegram",
+    "geosite:twitch-ads",
+
+    "domain:googlevideo.com",
+    "domain:ytimg.com",
+    "domain:youtu.be",
+
+    "domain:githubusercontent.com",
+    "domain:githubassets.com",
+
+    "domain:telegram.org",
+    "domain:t.me",
+
+    "domain:discord.com",
+    "domain:discord.gg",
+    "domain:discordapp.com",
+    "domain:discordapp.net",
+
+    "domain:reddit.com",
+    "domain:redd.it",
+
+    "domain:x.com",
+    "domain:twitter.com",
+    "domain:twimg.com",
+
+    "domain:openai.com",
+    "domain:chatgpt.com",
+    "domain:anthropic.com",
+    "domain:claude.ai",
+
+    "domain:cloudflare.com",
+    "domain:cloudflare-dns.com"
+  ],
 
   "ProxyIp": [],
 
