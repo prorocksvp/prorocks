@@ -10,8 +10,8 @@
   "DomesticDNSType": "DoH",
   "DomesticDNSDomain": "https://77.88.8.8/dns-query",
   "DomesticDNSIP": "77.88.8.8",
-  "Geositeurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@main/release/geosite.dat",
-  "Geoipurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@main/release/geoip.dat",
+  "Geositeurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@35739c5c72154e0b7f4e962d130ce0739f7159cf/release/geosite.dat",
+  "Geoipurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@35739c5c72154e0b7f4e962d130ce0739f7159cf/release/geoip.dat",
   "LastUpdated": "1787612421",
   "DnsHosts": {
     "lkfl2.nalog.ru": "213.24.64.175",
