@@ -5,3 +5,5 @@
 # Пример:
 # mybank.ru
 # corp-portal.example.com
+2ip.ru
+2ip.io
