@@ -27,6 +27,8 @@
     "geosite:whitelist",
     "domain:gosuslugi.ru",
     "domain:mos.ru",
+    "domain:parking.mos.ru",
+    "domain:transport.mos.ru",
     "domain:nalog.ru",
     "domain:parking.mos.ru",
     "domain:transport.mos.ru",
