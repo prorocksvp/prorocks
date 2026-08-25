@@ -14,9 +14,6 @@
   "DomesticDNSDomain": "https://common.dot.dns.yandex.net/dns-query",
   "DomesticDNSIP": "77.88.8.8",
 
-  "Geositeurl": "https://raw.githubusercontent.com/itproweb11/happ-routing/main/release/geosite.dat",
-  "Geoipurl": "https://raw.githubusercontent.com/itproweb11/happ-routing/main/release/geoip.dat",
-
   "LastUpdated": "{{auto}}",
 
   "DnsHosts": {
