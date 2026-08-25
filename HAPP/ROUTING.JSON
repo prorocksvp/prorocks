@@ -12,7 +12,7 @@
   "DomesticDNSIP": "77.88.8.8",
   "Geositeurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@main/release/geosite.dat",
   "Geoipurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@main/release/geoip.dat",
-  "LastUpdated": "1787699525",
+  "LastUpdated": "1787699730",
   "DnsHosts": {
     "lkfl2.nalog.ru": "213.24.64.175",
     "lknpd.nalog.ru": "213.24.64.181"
@@ -31,7 +31,6 @@
     "domain:parking.mos.ru",
     "domain:transport.mos.ru",
     "domain:dt.mos.ru",
-    "domain:ed.mos.ru",
     "domain:login.mos.ru",
     "domain:nalog.ru",
     "domain:vk.com",
