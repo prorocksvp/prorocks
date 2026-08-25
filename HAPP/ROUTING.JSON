@@ -12,7 +12,7 @@
   "DomesticDNSIP": "77.88.8.8",
   "Geositeurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@main/release/geosite.dat",
   "Geoipurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@main/release/geoip.dat",
-  "LastUpdated": "1787612421",
+  "LastUpdated": "1787698518",
   "DnsHosts": {
     "lkfl2.nalog.ru": "213.24.64.175",
     "lknpd.nalog.ru": "213.24.64.181"
@@ -135,7 +135,6 @@
     "domain:qwen.ai",
     "domain:qwenchat.ai",
     "domain:llama.com",
-    "domain:meta.ai",
     "domain:character.ai",
     "domain:poe.com",
     "domain:you.com",
@@ -158,7 +157,6 @@
     "domain:stability.ai",
     "domain:huggingface.co",
     "domain:replicate.com",
-    "domain:together.ai",
     "domain:together.ai",
     "domain:groq.com",
     "domain:fireworks.ai",
