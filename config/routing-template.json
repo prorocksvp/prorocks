@@ -38,6 +38,11 @@
     "domain:gosuslugi.ru",
     "domain:mos.ru",
     "domain:nalog.ru",
+    "domain:parking.mos.ru",
+    "domain:transport.mos.ru",
+    "domain:dt.mos.ru",
+    "domain:ed.mos.ru",
+    "domain:login.mos.ru",
 
     "domain:vk.com",
     "domain:vk.ru",
@@ -50,6 +55,67 @@
     "domain:mail.ru",
     "domain:rutube.ru",
     "domain:avito.ru",
+
+    "domain:ozon.ru",
+    "domain:ozon.com",
+    "domain:ozon.app",
+    "domain:ozonusercontent.com",
+
+    "domain:wildberries.ru",
+    "domain:wb.ru",
+    "domain:wbstatic.net",
+    "domain:wbcontent.net",
+    "domain:wildberries.am",
+    "domain:wildberries.by",
+    "domain:wildberries.kz",
+
+    "domain:market.yandex.ru",
+    "domain:yandex.net",
+    "domain:yastatic.net",
+
+    "domain:dns-shop.ru",
+    "domain:citilink.ru",
+
+    "domain:mvideo.ru",
+    "domain:eldorado.ru",
+
+    "domain:megamarket.ru",
+    "domain:sbermegamarket.ru",
+
+    "domain:lamoda.ru",
+    "domain:lamoda.co",
+
+    "domain:lemanapro.ru",
+
+    "domain:goldapple.ru",
+    "domain:gacdn.ru",
+
+    "domain:detmir.ru",
+    "domain:detmir.st",
+
+    "domain:hoff.ru",
+
+    "domain:aliexpress.ru",
+    "domain:alicdn.com",
+
+    "domain:kuper.ru",
+    "domain:samokat.ru",
+    "domain:cdek.ru",
+
+    "domain:lenta.com",
+    "domain:magnit.ru",
+
+    "domain:5ka.ru",
+    "domain:x5.ru",
+    "domain:perekrestok.ru",
+    "domain:chizhik.ru",
+    "domain:5post.ru",
+
+    "domain:vkusvill.ru",
+
+    "domain:auchan.ru",
+    "domain:okmarket.ru",
+    "domain:fix-price.ru",
 
     "geosite:microsoft",
     "geosite:apple",
@@ -69,7 +135,6 @@
   ],
 
   "ProxySites": [
-
     "geosite:youtube",
     "domain:youtube.com",
     "domain:youtu.be",
@@ -174,7 +239,6 @@
     "domain:qwenchat.ai",
 
     "domain:llama.com",
-    "domain:meta.ai",
 
     "domain:character.ai",
 
@@ -218,8 +282,6 @@
     "domain:huggingface.co",
 
     "domain:replicate.com",
-
-    "domain:together.ai",
 
     "domain:together.ai",
 
