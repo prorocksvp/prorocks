@@ -11,14 +11,17 @@
   "RemoteDNSIP": "8.8.8.8",
 
   "DomesticDNSType": "DoH",
-  "DomesticDNSDomain": "https://77.88.8.8/dns-query",
+  "DomesticDNSDomain": "https://common.dot.dns.yandex.net/dns-query",
   "DomesticDNSIP": "77.88.8.8",
 
-  "Geositeurl": "{{auto}}",
-  "Geoipurl": "{{auto}}",
+  "Geositeurl": "https://raw.githubusercontent.com/itproweb11/happ-routing/main/release/geosite.dat",
+  "Geoipurl": "https://raw.githubusercontent.com/itproweb11/happ-routing/main/release/geoip.dat",
+
   "LastUpdated": "{{auto}}",
 
   "DnsHosts": {
+    "dns.google": "8.8.8.8",
+    "common.dot.dns.yandex.net": "77.88.8.8",
     "lkfl2.nalog.ru": "213.24.64.175",
     "lknpd.nalog.ru": "213.24.64.181"
   },
@@ -32,6 +35,7 @@
     "domain:2ip.ru",
 
     "geosite:russia-inside",
+    "geosite:tld-ru",
     "geosite:category-ru",
     "geosite:whitelist",
 
@@ -51,6 +55,8 @@
     "domain:yandex.ru",
     "domain:yandex.com",
     "domain:ya.ru",
+    "domain:yandex.net",
+    "domain:yastatic.net",
 
     "domain:mail.ru",
     "domain:rutube.ru",
@@ -70,12 +76,9 @@
     "domain:wildberries.kz",
 
     "domain:market.yandex.ru",
-    "domain:yandex.net",
-    "domain:yastatic.net",
 
     "domain:dns-shop.ru",
     "domain:citilink.ru",
-
     "domain:mvideo.ru",
     "domain:eldorado.ru",
 
@@ -117,6 +120,32 @@
     "domain:okmarket.ru",
     "domain:fix-price.ru",
 
+    "domain:sberbank.ru",
+    "domain:tbank.ru",
+    "domain:tinkoff.ru",
+    "domain:vtb.ru",
+    "domain:alfabank.ru",
+
+    "domain:hh.ru",
+    "domain:auto.ru",
+    "domain:drom.ru",
+    "domain:cian.ru",
+    "domain:domclick.ru",
+
+    "domain:2gis.ru",
+
+    "domain:maps.yandex.ru",
+    "domain:taxi.yandex.ru",
+    "domain:eda.yandex.ru",
+    "domain:music.yandex.ru",
+
+    "domain:kinopoisk.ru",
+    "domain:ivi.ru",
+    "domain:okko.tv",
+    "domain:wink.ru",
+    "domain:vkvideo.ru",
+    "domain:max.ru",
+
     "geosite:microsoft",
     "geosite:apple",
     "geosite:steam",
@@ -124,14 +153,12 @@
     "geosite:riot",
     "geosite:escapefromtarkov",
     "geosite:faceit",
-    "geosite:twitch",
     "geosite:pinterest"
   ],
 
   "DirectIp": [
     "geoip:private",
-    "geoip:russia-inside",
-    "geoip:direct"
+    "geoip:russia-inside"
   ],
 
   "ProxySites": [
@@ -146,10 +173,24 @@
     "domain:youtubeeducation.com",
     "domain:ggpht.com",
 
+    "geosite:google",
     "geosite:google-play",
     "domain:googleapis.com",
     "domain:googleusercontent.com",
     "domain:gstatic.com",
+
+    "domain:gemini.google.com",
+    "domain:bard.google.com",
+    "domain:ai.google",
+    "domain:labs.google",
+    "domain:deepmind.google",
+
+    "domain:accounts.google.com",
+    "domain:myaccount.google.com",
+
+    "domain:generativelanguage.googleapis.com",
+    "domain:content-generativelanguage.googleapis.com",
+    "domain:oauth2.googleapis.com",
 
     "geosite:github",
     "domain:github.com",
@@ -209,11 +250,6 @@
     "domain:oaistatic.com",
     "domain:oaiusercontent.com",
 
-    "domain:gemini.google.com",
-    "domain:ai.google.dev",
-    "domain:aistudio.google.com",
-    "domain:bard.google.com",
-
     "domain:claude.ai",
     "domain:anthropic.com",
 
@@ -239,64 +275,40 @@
     "domain:qwenchat.ai",
 
     "domain:llama.com",
-
     "domain:character.ai",
-
     "domain:poe.com",
-
     "domain:you.com",
-
     "domain:cohere.com",
-
     "domain:pi.ai",
-
     "domain:phind.com",
-
     "domain:deepai.org",
-
     "domain:jasper.ai",
 
     "domain:gamma.app",
-
     "domain:canva.com",
 
     "domain:midjourney.com",
     "domain:cdn.midjourney.com",
 
     "domain:leonardo.ai",
-
     "domain:ideogram.ai",
-
     "domain:krea.ai",
-
     "domain:runwayml.com",
-
     "domain:pika.art",
-
     "domain:suno.com",
-
     "domain:elevenlabs.io",
-
     "domain:stability.ai",
 
     "domain:huggingface.co",
-
     "domain:replicate.com",
-
     "domain:together.ai",
-
     "domain:groq.com",
-
     "domain:fireworks.ai",
 
     "domain:cursor.com",
-
     "domain:cursor.sh",
-
     "domain:codeium.com",
-
     "domain:windsurf.com",
-
     "domain:tabnine.com",
 
     "domain:cloudflare.com",
@@ -312,6 +324,6 @@
 
   "BlockIp": [],
 
-  "DomainStrategy": "IPIfNonMatch",
+  "DomainStrategy": "AsIs",
   "FakeDNS": "false"
 }
