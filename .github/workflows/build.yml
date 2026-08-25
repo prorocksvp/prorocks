@@ -3,9 +3,12 @@ name: Build geo-files and Happ routing
 on:
   schedule:
     - cron: "20 4 * * *"   # ежедневно 04:20 UTC (07:20 МСК)
+
   workflow_dispatch:        # ручной запуск из вкладки Actions
+
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - "config/**"
       - "custom/**"
@@ -18,6 +21,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,21 +38,58 @@ jobs:
           python-version: "3.12"
 
       - name: Generate lists from opencck
-        run: python3 scripts/fetch_opencck.py --outdir build
+        run: |
+          set -e
+
+          for i in 1 2 3 4 5; do
+            echo "========================================"
+            echo "Попытка загрузки opencck: $i/5"
+            echo "========================================"
+
+            if python3 scripts/fetch_opencck.py --outdir build; then
+              echo "opencck успешно загружен"
+              exit 0
+            fi
+
+            if [ "$i" -lt 5 ]; then
+              echo "Загрузка не удалась."
+              echo "Повтор через 10 секунд..."
+              sleep 10
+            fi
+          done
+
+          echo "========================================"
+          echo "ОШИБКА: opencck не удалось загрузить"
+          echo "После 5 попыток."
+          echo "========================================"
+
+          exit 1
 
       - name: Build geosite.dat
         run: |
-          git clone --depth 1 https://github.com/v2fly/domain-list-community.git dlc
-          git clone --depth 1 https://github.com/hydraponique/roscomvpn-geosite.git rvpn-geosite
+          set -e
 
-          # кастомные категории RoscomVPN (whitelist, twitch-ads, faceit и т.д.)
-          # поверх полного набора v2fly + наша категория russia-inside
+          git clone \
+            --depth 1 \
+            https://github.com/v2fly/domain-list-community.git \
+            dlc
+
+          git clone \
+            --depth 1 \
+            https://github.com/hydraponique/roscomvpn-geosite.git \
+            rvpn-geosite
+
+          # Кастомные категории RoscomVPN:
+          # whitelist, twitch-ads, faceit и т.д.
+          # Поверх полного набора v2fly + наша категория russia-inside.
+
           cp -f rvpn-geosite/data/* dlc/data/
           cp -f build/russia-inside dlc/data/russia-inside
 
           mkdir -p "$GITHUB_WORKSPACE/release"
 
           cd dlc
+
           go run ./ \
             --datapath=./data \
             --outputname=geosite.dat \
@@ -56,13 +97,22 @@ jobs:
 
       - name: Build geoip.dat
         run: |
-          git clone --depth 1 https://github.com/v2fly/geoip.git geoip-tool
+          set -e
 
-          # базовый geoip RoscomVPN (категории direct/private) + наши CIDR
-          curl -fsSL -o geoip-tool/upstream-geoip.dat \
+          git clone \
+            --depth 1 \
+            https://github.com/v2fly/geoip.git \
+            geoip-tool
+
+          # Базовый geoip RoscomVPN
+          # + наши CIDR russia-inside.
+
+          curl -fsSL \
+            -o geoip-tool/upstream-geoip.dat \
             https://github.com/hydraponique/roscomvpn-geoip/releases/latest/download/geoip.dat
 
-          cp build/russia-inside.txt geoip-tool/russia-inside.txt
+          cp build/russia-inside.txt \
+            geoip-tool/russia-inside.txt
 
           cat > geoip-tool/config-custom.json <<'EOF'
           {
@@ -101,38 +151,82 @@ jobs:
           EOF
 
           cd geoip-tool
+
           go run ./ -c config-custom.json
 
-          cp output/geoip.dat "$GITHUB_WORKSPACE/release/geoip.dat"
+          cp output/geoip.dat \
+            "$GITHUB_WORKSPACE/release/geoip.dat"
+
+      - name: Check geo files
+        run: |
+          set -e
+
+          echo "========== FILE SIZE =========="
+
+          ls -lh release/geoip.dat
+          ls -lh release/geosite.dat
+
+          echo "========== DISK SIZE =========="
+
+          du -h release/geoip.dat
+          du -h release/geosite.dat
+
+          echo "========== CHECK RUSSIA =========="
+
+          strings release/geoip.dat | grep -i RUSSIA || true
+          strings release/geosite.dat | grep -i RUSSIA || true
 
       - name: Check for changes
         id: changes
         run: |
-          if [ "${{ github.event_name }}" = "schedule" ] && [ -z "$(git status --porcelain -- release)" ]; then
+          if [ "${{ github.event_name }}" = "schedule" ] \
+            && [ -z "$(git status --porcelain -- release)" ]; then
+
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "Геофайлы не изменились — пропускаем релиз"
+
           else
+
             echo "skip=false" >> "$GITHUB_OUTPUT"
+
           fi
 
       - name: Build Happ routing profile
         if: steps.changes.outputs.skip == 'false'
         id: routing
         run: |
+          set -e
+
           TAG="$(date -u +%Y%m%d%H%M)"
+
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-          python3 scripts/build_routing.py --tag "$TAG"
+          echo "========================================"
+          echo "Build Happ routing profile"
+          echo "TAG: $TAG"
+          echo "========================================"
+
+          python3 scripts/build_routing.py \
+            --tag "$TAG"
+
+          echo "========================================"
+          echo "Happ routing files:"
+          echo "========================================"
+
+          ls -lh HAPP/
 
       - name: Commit and tag
         if: steps.changes.outputs.skip == 'false'
         run: |
+          set -e
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add release HAPP
 
-          git commit -m "build: ${{ steps.routing.outputs.tag }}"
+          git commit \
+            -m "build: ${{ steps.routing.outputs.tag }}"
 
           git tag "${{ steps.routing.outputs.tag }}"
 
