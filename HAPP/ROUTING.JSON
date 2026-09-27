@@ -12,7 +12,7 @@
   "DomesticDNSIP": "77.88.8.8",
   "Geositeurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@main/release/geosite.dat",
   "Geoipurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@main/release/geoip.dat",
-  "LastUpdated": "1790545395",
+  "LastUpdated": "1790546875",
   "DnsHosts": {
     "lkfl2.nalog.ru": "213.24.64.175",
     "lknpd.nalog.ru": "213.24.64.181"
@@ -29,15 +29,6 @@
     "domain:api.soundcloud.com",
     "domain:m.soundcloud.com",
     "domain:secure.soundcloud.com",
-    "domain:malwarebytes.com",
-    "domain:www.malwarebytes.com",
-    "domain:downloads.malwarebytes.com",
-    "domain:support.malwarebytes.com",
-    "domain:forums.malwarebytes.com",
-    "domain:blog.malwarebytes.com",
-    "domain:my.malwarebytes.com",
-    "domain:account.malwarebytes.com",
-    "domain:api.malwarebytes.com",
     "domain:gosuslugi.ru",
     "domain:mos.ru",
     "domain:nalog.ru",
@@ -64,8 +55,7 @@
     "geosite:faceit",
     "geosite:twitch",
     "geosite:pinterest",
-    "geosite:soundcloud",
-    "geosite:malwarebytes"
+    "geosite:soundcloud"
   ],
   "DirectIp": [
     "geoip:private",
