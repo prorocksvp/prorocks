@@ -70,7 +70,7 @@
     "geosite:faceit",
     "geosite:twitch",
     "geosite:pinterest",
-    "geosite:soundcloud",
+    "geosite:soundcloud"
   ],
 
   "DirectIp": [
