@@ -12,7 +12,7 @@
   "DomesticDNSIP": "77.88.8.8",
   "Geositeurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@main/release/geosite.dat",
   "Geoipurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@main/release/geoip.dat",
-  "LastUpdated": "1790503509",
+  "LastUpdated": "1790544973",
   "DnsHosts": {
     "lkfl2.nalog.ru": "213.24.64.175",
     "lknpd.nalog.ru": "213.24.64.181"
@@ -25,6 +25,10 @@
     "geosite:russia-inside",
     "geosite:category-ru",
     "geosite:whitelist",
+    "domain:soundcloud.com",
+    "domain:api.soundcloud.com",
+    "domain:m.soundcloud.com",
+    "domain:secure.soundcloud.com",
     "domain:gosuslugi.ru",
     "domain:mos.ru",
     "domain:nalog.ru",
@@ -50,7 +54,8 @@
     "geosite:escapefromtarkov",
     "geosite:faceit",
     "geosite:twitch",
-    "geosite:pinterest"
+    "geosite:pinterest",
+    "geosite:soundcloud"
   ],
   "DirectIp": [
     "geoip:private",
