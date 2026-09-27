@@ -40,6 +40,16 @@
     "domain:m.soundcloud.com",
     "domain:secure.soundcloud.com",
 
+    "domain:malwarebytes.com",
+    "domain:www.malwarebytes.com",
+    "domain:downloads.malwarebytes.com",
+    "domain:support.malwarebytes.com",
+    "domain:forums.malwarebytes.com",
+    "domain:blog.malwarebytes.com",
+    "domain:my.malwarebytes.com",
+    "domain:account.malwarebytes.com",
+    "domain:api.malwarebytes.com",
+
     "domain:gosuslugi.ru",
     "domain:mos.ru",
     "domain:nalog.ru",
@@ -70,7 +80,8 @@
     "geosite:faceit",
     "geosite:twitch",
     "geosite:pinterest",
-    "geosite:soundcloud"
+    "geosite:soundcloud",
+    "geosite:malwarebytes"
   ],
 
   "DirectIp": [
