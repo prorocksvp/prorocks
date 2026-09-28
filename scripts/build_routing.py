@@ -1,44 +1,59 @@
 #!/usr/bin/env python3
 """
-Собирает итоговые профили маршрутизации из общего шаблона:
+Собирает профили маршрутизации из общего шаблона:
 
-  HAPP/ROUTING.JSON
-  HAPP/ROUTING.DEEPLINK
-  HAPP/ROUTING.ONADD.DEEPLINK
+HAPP/
+  ROUTING.JSON
+  ROUTING.DEEPLINK
+  ROUTING.ONADD.DEEPLINK
 
-  INCY/ROUTING.JSON
-  INCY/ROUTING.ONADD.DEEPLINK
+INCY/
+  ROUTING.JSON
+  ROUTING.ONADD.DEEPLINK
 
 Источник:
   config/routing-template.json
 
-Все правила маршрутизации берутся из одного шаблона.
-Поэтому добавление домена в routing-template.json
-автоматически попадает и в Happ, и в INCY.
+Перед сборкой синхронизирует локальную ветку main
+с origin/main, чтобы избежать ошибки:
+
+  ! [rejected] HEAD -> main (fetch first)
 
 Использование:
 
-  python3 scripts/build_routing.py \
-      --repo prorocksvp/prorocks \
-      --tag 202609280818
-
-В GitHub Actions --repo берётся из GITHUB_REPOSITORY.
+  python3 scripts/build_routing.py 
+      --repo prorocksvp/prorocks 
+      --tag 202609280822
 """
 
 import argparse
 import base64
 import json
 import os
+import subprocess
 import sys
 import time
 from pathlib import Path
 
 
+def run_git(*args: str) -> None:
+    """Выполнить git-команду и остановиться при ошибке."""
+
+    print(f"+ git {' '.join(args)}")
+
+    result = subprocess.run(
+        ["git", *args],
+        text=True
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"Git command failed: git {' '.join(args)}"
+        )
+
+
 def encode_config(cfg: dict) -> str:
-    """
-    Кодирует JSON-конфигурацию в Base64
-    для deeplink.
-    """
+    """JSON -> Base64 для deeplink."""
 
     data = json.dumps(
         cfg,
@@ -50,9 +65,7 @@ def encode_config(cfg: dict) -> str:
 
 
 def write_json(path: Path, cfg: dict) -> None:
-    """
-    Записывает JSON с красивым форматированием.
-    """
+    """Записывает JSON с форматированием."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -66,6 +79,41 @@ def write_json(path: Path, cfg: dict) -> None:
     )
 
 
+def sync_main_branch() -> None:
+    """
+    Синхронизирует текущую ветку с origin/main.
+
+    Это выполняется ДО генерации файлов.
+    Поэтому build commit создаётся поверх
+    самого свежего состояния удалённого main.
+    """
+
+    # Получаем актуальное состояние origin/main.
+    run_git("fetch", "origin", "main")
+
+    # Проверяем текущую ветку.
+    result = subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True,
+        check=True
+    )
+
+    current_branch = result.stdout.strip()
+
+    # В GitHub Actions ожидаем main.
+    if current_branch != "main":
+        print(
+            f"Предупреждение: текущая ветка '{current_branch}', "
+            f"ожидалась 'main'."
+        )
+        return
+
+    # Если origin/main ушёл вперёд,
+    # переносим локальные изменения поверх него.
+    run_git("rebase", "origin/main")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Build Happ and INCY routing profiles"
@@ -74,13 +122,13 @@ def main() -> int:
     parser.add_argument(
         "--template",
         default="config/routing-template.json",
-        help="Путь к общему шаблону маршрутизации"
+        help="Путь к общему шаблону"
     )
 
     parser.add_argument(
         "--repo",
         default=os.environ.get("GITHUB_REPOSITORY"),
-        help="GitHub repository в формате USER/REPO"
+        help="GitHub repository USER/REPO"
     )
 
     parser.add_argument(
@@ -98,25 +146,38 @@ def main() -> int:
     parser.add_argument(
         "--happ-outdir",
         default="HAPP",
-        help="Каталог результата Happ"
+        help="Каталог Happ"
     )
 
     parser.add_argument(
         "--incy-outdir",
         default="INCY",
-        help="Каталог результата INCY"
+        help="Каталог INCY"
     )
 
     args = parser.parse_args()
 
     # ---------------------------------------------------------
-    # Проверка репозитория
+    # Проверка repository
     # ---------------------------------------------------------
 
     if not args.repo or "/" not in args.repo:
         print(
             "Ошибка: укажите --repo USER/REPO "
-            "(или запускайте скрипт в GitHub Actions)",
+            "(или запускайте через GitHub Actions)",
+            file=sys.stderr
+        )
+        return 1
+
+    # ---------------------------------------------------------
+    # Синхронизация с origin/main
+    # ---------------------------------------------------------
+
+    try:
+        sync_main_branch()
+    except RuntimeError as error:
+        print(
+            f"Ошибка синхронизации Git: {error}",
             file=sys.stderr
         )
         return 1
@@ -147,23 +208,15 @@ def main() -> int:
 
     if not isinstance(cfg, dict):
         print(
-            "Ошибка: корень routing-template.json должен быть JSON-объектом",
+            "Ошибка: routing-template.json должен "
+            "содержать JSON-объект",
             file=sys.stderr
         )
         return 1
 
     # ---------------------------------------------------------
-    # Формируем ссылки на geosite.dat / geoip.dat
+    # Общие URL geosite / geoip
     # ---------------------------------------------------------
-
-    # Используем main, поэтому URL остаётся постоянным.
-    #
-    # После новой сборки содержимое:
-    #
-    #   release/geosite.dat
-    #   release/geoip.dat
-    #
-    # меняется, но URL остаётся тем же.
 
     base = (
         f"https://cdn.jsdelivr.net/gh/"
@@ -173,19 +226,11 @@ def main() -> int:
     cfg["Geositeurl"] = f"{base}/geosite.dat"
     cfg["Geoipurl"] = f"{base}/geoip.dat"
 
-    # Меняем время обновления при каждой сборке.
+    # Timestamp заставляет приложения учитывать
+    # изменение конфигурации.
     cfg["LastUpdated"] = str(args.last_updated)
 
-    # ---------------------------------------------------------
-    # Создаём отдельные копии конфигурации
-    # ---------------------------------------------------------
-
-    # Сейчас формат routing-template.json совместим
-    # одновременно с Happ и INCY.
-    #
-    # Используем отдельные dict, чтобы в дальнейшем
-    # форматы можно было изменять независимо.
-
+    # Отдельные копии для двух клиентов.
     happ_cfg = dict(cfg)
     incy_cfg = dict(cfg)
 
@@ -196,22 +241,18 @@ def main() -> int:
     happ_dir = Path(args.happ_outdir)
     happ_dir.mkdir(parents=True, exist_ok=True)
 
-    # Итоговый JSON
     write_json(
         happ_dir / "ROUTING.JSON",
         happ_cfg
     )
 
-    # Base64 для deeplink
     happ_b64 = encode_config(happ_cfg)
 
-    # Ручное добавление
     (happ_dir / "ROUTING.DEEPLINK").write_text(
         f"happ://routing/add/{happ_b64}\n",
         encoding="utf-8"
     )
 
-    # Автоматическое добавление
     (happ_dir / "ROUTING.ONADD.DEEPLINK").write_text(
         f"happ://routing/onadd/{happ_b64}\n",
         encoding="utf-8"
@@ -224,26 +265,20 @@ def main() -> int:
     incy_dir = Path(args.incy_outdir)
     incy_dir.mkdir(parents=True, exist_ok=True)
 
-    # Итоговый JSON
     write_json(
         incy_dir / "ROUTING.JSON",
         incy_cfg
     )
 
-    # Base64 для INCY
     incy_b64 = encode_config(incy_cfg)
 
-    # INCY использует именно:
-    #
-    # incy://routing/onadd/{base64}
-    #
     (incy_dir / "ROUTING.ONADD.DEEPLINK").write_text(
         f"incy://routing/onadd/{incy_b64}\n",
         encoding="utf-8"
     )
 
     # ---------------------------------------------------------
-    # Проверяем, что основные массивы существуют
+    # Проверка полей маршрутизации
     # ---------------------------------------------------------
 
     routing_fields = (
@@ -264,7 +299,7 @@ def main() -> int:
             )
 
     # ---------------------------------------------------------
-    # Информация о сборке
+    # Информация
     # ---------------------------------------------------------
 
     print()
@@ -290,7 +325,6 @@ def main() -> int:
     print(f"  {incy_dir / 'ROUTING.ONADD.DEEPLINK'}")
     print()
 
-    # Показываем количество правил
     print("Routing rules:")
 
     for field in routing_fields:
