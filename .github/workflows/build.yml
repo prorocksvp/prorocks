@@ -41,17 +41,17 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "Release tag: $TAG"
 
-      - name: Sync main
+      - name: Sync repository
         run: |
           set -e
-          git fetch origin main
+          git fetch --prune origin
           git checkout main
-          git rebase origin/main
+          git reset --hard origin/main
+          echo "Repository synchronized with origin/main"
 
       - name: Build HAPP and INCY
         run: |
           set -e
-
           python scripts/build_routing.py \
             --repo "prorocksvp/prorocks" \
             --tag "${{ steps.release.outputs.tag }}"
@@ -60,13 +60,16 @@ jobs:
         run: |
           set -e
 
+          echo "Checking HAPP..."
           test -f HAPP/ROUTING.JSON
           test -f HAPP/ROUTING.DEEPLINK
           test -f HAPP/ROUTING.ONADD.DEEPLINK
 
+          echo "Checking INCY..."
           test -f INCY/ROUTING.JSON
           test -f INCY/ROUTING.ONADD.DEEPLINK
 
+          echo "Checking JSON..."
           python -m json.tool HAPP/ROUTING.JSON > /dev/null
           python -m json.tool INCY/ROUTING.JSON > /dev/null
 
@@ -114,10 +117,10 @@ jobs:
 
           for field in fields:
               if happ.get(field) != incy.get(field):
-                  print(f"ERROR: HAPP and INCY differ in {field}")
+                  print(f"ERROR: HAPP and INCY differ in: {field}")
                   sys.exit(1)
 
-          print("HAPP and INCY are synchronized.")
+          print("HAPP and INCY routing configurations are identical.")
           PY
 
       - name: Commit and push
@@ -137,14 +140,16 @@ jobs:
           git commit \
             -m "build: ${{ steps.release.outputs.tag }}"
 
-          git tag "${{ steps.release.outputs.tag }}"
+          echo "Fetching latest main before push..."
+          git fetch --prune origin main
 
-          # Get any commits that appeared on main while this
-          # workflow was running.
-          git fetch origin main
-
-          # Put our generated commit on top of the latest main.
+          echo "Rebasing generated commit..."
           git rebase origin/main
 
-          # Push the rebased commit and tag.
+          echo "Creating release tag..."
+          git tag "${{ steps.release.outputs.tag }}"
+
+          echo "Pushing main and tag..."
           git push origin HEAD:main --follow-tags
+
+          echo "Push completed successfully."
