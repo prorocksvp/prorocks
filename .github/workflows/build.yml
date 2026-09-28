@@ -223,7 +223,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          add release HAPP INCY
+          git add release HAPP INCY
 
           git commit \
             -m "build: ${{ steps.routing.outputs.tag }}"
