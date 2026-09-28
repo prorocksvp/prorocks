@@ -7,11 +7,9 @@ on:
     paths:
       - "config/routing-template.json"
       - "scripts/build_routing.py"
-      - ".github/workflows/build-routing.yml"
-
+      - ".github/workflows/build.yml"
   workflow_dispatch:
 
-# Do not allow two routing builds to modify main simultaneously.
 concurrency:
   group: routing-build
   cancel-in-progress: false
@@ -24,63 +22,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-      # -------------------------------------------------------
-      # Checkout complete repository
-      # -------------------------------------------------------
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: main
 
-      # -------------------------------------------------------
-      # Python
-      # -------------------------------------------------------
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      # -------------------------------------------------------
-      # Generate unique build tag
-      # -------------------------------------------------------
-
       - name: Generate release tag
         id: release
-        shell: bash
         run: |
           set -e
-
           TAG="$(date -u +'%Y%m%d%H%M%S')"
-
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-
           echo "Release tag: $TAG"
 
-      # -------------------------------------------------------
-      # Sync with latest main BEFORE building
-      # -------------------------------------------------------
-
       - name: Sync main
-        shell: bash
         run: |
           set -e
-
           git fetch origin main
-
           git checkout main
-
           git rebase origin/main
 
-      # -------------------------------------------------------
-      # Build HAPP + INCY
-      # -------------------------------------------------------
-
       - name: Build HAPP and INCY
-        shell: bash
         run: |
           set -e
 
@@ -88,45 +56,23 @@ jobs:
             --repo "prorocksvp/prorocks" \
             --tag "${{ steps.release.outputs.tag }}"
 
-      # -------------------------------------------------------
-      # Verify generated files
-      # -------------------------------------------------------
-
       - name: Verify generated files
-        shell: bash
         run: |
           set -e
-
-          echo "===== HAPP ====="
 
           test -f HAPP/ROUTING.JSON
           test -f HAPP/ROUTING.DEEPLINK
           test -f HAPP/ROUTING.ONADD.DEEPLINK
 
-          echo "HAPP files OK"
-
-          echo
-          echo "===== INCY ====="
-
           test -f INCY/ROUTING.JSON
           test -f INCY/ROUTING.ONADD.DEEPLINK
-
-          echo "INCY files OK"
-
-          echo
-          echo "===== JSON validation ====="
 
           python -m json.tool HAPP/ROUTING.JSON > /dev/null
           python -m json.tool INCY/ROUTING.JSON > /dev/null
 
-          echo "JSON files are valid"
+          echo "All generated files are valid."
 
-      # -------------------------------------------------------
-      # Check that HAPP and INCY contain the same routing rules
-      # -------------------------------------------------------
-
-      - name: Verify HAPP and INCY are synchronized
-        shell: bash
+      - name: Verify HAPP and INCY
         run: |
           set -e
 
@@ -134,10 +80,10 @@ jobs:
           import json
           import sys
 
-          with open("HAPP/ROUTING.JSON", "r", encoding="utf-8") as f:
+          with open("HAPP/ROUTING.JSON", encoding="utf-8") as f:
               happ = json.load(f)
 
-          with open("INCY/ROUTING.JSON", "r", encoding="utf-8") as f:
+          with open("INCY/ROUTING.JSON", encoding="utf-8") as f:
               incy = json.load(f)
 
           fields = [
@@ -168,39 +114,23 @@ jobs:
 
           for field in fields:
               if happ.get(field) != incy.get(field):
-                  print(f"ERROR: HAPP and INCY differ in: {field}")
+                  print(f"ERROR: HAPP and INCY differ in {field}")
                   sys.exit(1)
 
-          print("HAPP and INCY routing configurations are identical.")
+          print("HAPP and INCY are synchronized.")
           PY
 
-      # -------------------------------------------------------
-      # Show changes
-      # -------------------------------------------------------
-
-      - name: Show generated changes
-        shell: bash
-        run: |
-          git status --short
-
-      # -------------------------------------------------------
-      # Commit and push
-      # -------------------------------------------------------
-
       - name: Commit and push
-        shell: bash
         run: |
           set -e
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          echo "Adding generated HAPP and INCY files..."
-
           git add HAPP/ INCY/
 
           if git diff --cached --quiet; then
-            echo "No generated changes."
+            echo "No changes to commit."
             exit 0
           fi
 
@@ -209,12 +139,12 @@ jobs:
 
           git tag "${{ steps.release.outputs.tag }}"
 
-          # Sync once more before pushing.
-          # This prevents the usual "fetch first" error if main
-          # received another commit while the build was running.
+          # Get any commits that appeared on main while this
+          # workflow was running.
           git fetch origin main
 
+          # Put our generated commit on top of the latest main.
           git rebase origin/main
 
-          # Push commit and tag.
+          # Push the rebased commit and tag.
           git push origin HEAD:main --follow-tags
