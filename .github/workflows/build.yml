@@ -1,19 +1,20 @@
-name: Build geo-files and Happ routing
+name: Build Routing
 
 on:
-  schedule:
-    - cron: "20 4 * * *"   # ежедневно 04:20 UTC (07:20 МСК)
-
-  workflow_dispatch:        # ручной запуск из вкладки Actions
-
   push:
     branches:
       - main
     paths:
-      - "config/**"
-      - "custom/**"
-      - "scripts/**"
-      - ".github/workflows/build.yml"
+      - "config/routing-template.json"
+      - "scripts/build_routing.py"
+      - ".github/workflows/build-routing.yml"
+
+  workflow_dispatch:
+
+# Do not allow two routing builds to modify main simultaneously.
+concurrency:
+  group: routing-build
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -23,220 +24,197 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
+      # -------------------------------------------------------
+      # Checkout complete repository
+      # -------------------------------------------------------
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          go-version: "1.22"
-          cache: false
+          fetch-depth: 0
+          ref: main
+
+      # -------------------------------------------------------
+      # Python
+      # -------------------------------------------------------
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Generate lists from opencck
+      # -------------------------------------------------------
+      # Generate unique build tag
+      # -------------------------------------------------------
+
+      - name: Generate release tag
+        id: release
+        shell: bash
         run: |
           set -e
 
-          for i in 1 2 3 4 5; do
-            echo "========================================"
-            echo "Попытка загрузки opencck: $i/5"
-            echo "========================================"
-
-            if python3 scripts/fetch_opencck.py --outdir build; then
-              echo "opencck успешно загружен"
-              exit 0
-            fi
-
-            if [ "$i" -lt 5 ]; then
-              echo "Загрузка не удалась."
-              echo "Повтор через 10 секунд..."
-              sleep 10
-            fi
-          done
-
-          echo "========================================"
-          echo "ОШИБКА: opencck не удалось загрузить"
-          echo "После 5 попыток."
-          echo "========================================"
-
-          exit 1
-
-      - name: Build geosite.dat
-        run: |
-          set -e
-
-          git clone \
-            --depth 1 \
-            https://github.com/v2fly/domain-list-community.git \
-            dlc
-
-          git clone \
-            --depth 1 \
-            https://github.com/hydraponique/roscomvpn-geosite.git \
-            rvpn-geosite
-
-          # Кастомные категории RoscomVPN:
-          # whitelist, twitch-ads, faceit и т.д.
-          # Поверх полного набора v2fly + наша категория russia-inside.
-
-          cp -f rvpn-geosite/data/* dlc/data/
-          cp -f build/russia-inside dlc/data/russia-inside
-
-          mkdir -p "$GITHUB_WORKSPACE/release"
-
-          cd dlc
-
-          go run ./ \
-            --datapath=./data \
-            --outputname=geosite.dat \
-            --outputdir="$GITHUB_WORKSPACE/release"
-
-      - name: Build geoip.dat
-        run: |
-          set -e
-
-          git clone \
-            --depth 1 \
-            https://github.com/v2fly/geoip.git \
-            geoip-tool
-
-          # Базовый geoip RoscomVPN
-          # + наши CIDR russia-inside.
-
-          curl -fsSL \
-            -o geoip-tool/upstream-geoip.dat \
-            https://github.com/hydraponique/roscomvpn-geoip/releases/latest/download/geoip.dat
-
-          cp build/russia-inside.txt \
-            geoip-tool/russia-inside.txt
-
-          cat > geoip-tool/config-custom.json <<'EOF'
-          {
-            "input": [
-              {
-                "type": "v2rayGeoIPDat",
-                "action": "add",
-                "args": {
-                  "uri": "./upstream-geoip.dat"
-                }
-              },
-              {
-                "type": "text",
-                "action": "add",
-                "args": {
-                  "name": "russia-inside",
-                  "uri": "./russia-inside.txt"
-                }
-              },
-              {
-                "type": "private",
-                "action": "add"
-              }
-            ],
-            "output": [
-              {
-                "type": "v2rayGeoIPDat",
-                "action": "output",
-                "args": {
-                  "outputDir": "./output",
-                  "outputName": "geoip.dat"
-                }
-              }
-            ]
-          }
-          EOF
-
-          cd geoip-tool
-
-          go run ./ -c config-custom.json
-
-          cp output/geoip.dat \
-            "$GITHUB_WORKSPACE/release/geoip.dat"
-
-      - name: Check geo files
-        run: |
-          set -e
-
-          echo "========== FILE SIZE =========="
-
-          ls -lh release/geoip.dat
-          ls -lh release/geosite.dat
-
-          echo "========== DISK SIZE =========="
-
-          du -h release/geoip.dat
-          du -h release/geosite.dat
-
-          echo "========== CHECK RUSSIA =========="
-
-          strings release/geoip.dat | grep -i RUSSIA || true
-          strings release/geosite.dat | grep -i RUSSIA || true
-
-      - name: Check for changes
-        id: changes
-        run: |
-          if [ "${{ github.event_name }}" = "schedule" ] \
-            && [ -z "$(git status --porcelain -- release)" ]; then
-
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "Геофайлы не изменились — пропускаем релиз"
-
-          else
-
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-
-          fi
-
-      - name: Build Happ routing profile
-        if: steps.changes.outputs.skip == 'false'
-        id: routing
-        run: |
-          set -e
-
-          TAG="$(date -u +%Y%m%d%H%M)"
+          TAG="$(date -u +'%Y%m%d%H%M%S')"
 
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-          echo "========================================"
-          echo "Build Happ routing profile"
-          echo "TAG: $TAG"
-          echo "========================================"
+          echo "Release tag: $TAG"
 
-          python3 scripts/build_routing.py \
-            --tag "$TAG"
+      # -------------------------------------------------------
+      # Sync with latest main BEFORE building
+      # -------------------------------------------------------
 
-          echo "========================================"
-          echo "Happ routing files:"
-          echo "========================================"
+      - name: Sync main
+        shell: bash
+        run: |
+          set -e
 
-          ls -lh HAPP/
+          git fetch origin main
 
-      - name: Commit and tag
-        if: steps.changes.outputs.skip == 'false'
+          git checkout main
+
+          git rebase origin/main
+
+      # -------------------------------------------------------
+      # Build HAPP + INCY
+      # -------------------------------------------------------
+
+      - name: Build HAPP and INCY
+        shell: bash
+        run: |
+          set -e
+
+          python scripts/build_routing.py \
+            --repo "prorocksvp/prorocks" \
+            --tag "${{ steps.release.outputs.tag }}"
+
+      # -------------------------------------------------------
+      # Verify generated files
+      # -------------------------------------------------------
+
+      - name: Verify generated files
+        shell: bash
+        run: |
+          set -e
+
+          echo "===== HAPP ====="
+
+          test -f HAPP/ROUTING.JSON
+          test -f HAPP/ROUTING.DEEPLINK
+          test -f HAPP/ROUTING.ONADD.DEEPLINK
+
+          echo "HAPP files OK"
+
+          echo
+          echo "===== INCY ====="
+
+          test -f INCY/ROUTING.JSON
+          test -f INCY/ROUTING.ONADD.DEEPLINK
+
+          echo "INCY files OK"
+
+          echo
+          echo "===== JSON validation ====="
+
+          python -m json.tool HAPP/ROUTING.JSON > /dev/null
+          python -m json.tool INCY/ROUTING.JSON > /dev/null
+
+          echo "JSON files are valid"
+
+      # -------------------------------------------------------
+      # Check that HAPP and INCY contain the same routing rules
+      # -------------------------------------------------------
+
+      - name: Verify HAPP and INCY are synchronized
+        shell: bash
+        run: |
+          set -e
+
+          python - <<'PY'
+          import json
+          import sys
+
+          with open("HAPP/ROUTING.JSON", "r", encoding="utf-8") as f:
+              happ = json.load(f)
+
+          with open("INCY/ROUTING.JSON", "r", encoding="utf-8") as f:
+              incy = json.load(f)
+
+          fields = [
+              "Name",
+              "GlobalProxy",
+              "UseChunkFiles",
+              "RemoteDns",
+              "DomesticDns",
+              "RemoteDNSType",
+              "RemoteDNSDomain",
+              "RemoteDNSIP",
+              "DomesticDNSType",
+              "DomesticDNSDomain",
+              "DomesticDNSIP",
+              "Geositeurl",
+              "Geoipurl",
+              "DnsHosts",
+              "RouteOrder",
+              "DirectSites",
+              "DirectIp",
+              "ProxySites",
+              "ProxyIp",
+              "BlockSites",
+              "BlockIp",
+              "DomainStrategy",
+              "FakeDNS",
+          ]
+
+          for field in fields:
+              if happ.get(field) != incy.get(field):
+                  print(f"ERROR: HAPP and INCY differ in: {field}")
+                  sys.exit(1)
+
+          print("HAPP and INCY routing configurations are identical.")
+          PY
+
+      # -------------------------------------------------------
+      # Show changes
+      # -------------------------------------------------------
+
+      - name: Show generated changes
+        shell: bash
+        run: |
+          git status --short
+
+      # -------------------------------------------------------
+      # Commit and push
+      # -------------------------------------------------------
+
+      - name: Commit and push
+        shell: bash
         run: |
           set -e
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add release HAPP INCY
+          echo "Adding generated HAPP and INCY files..."
+
+          git add HAPP/ INCY/
+
+          if git diff --cached --quiet; then
+            echo "No generated changes."
+            exit 0
+          fi
 
           git commit \
-            -m "build: ${{ steps.routing.outputs.tag }}"
+            -m "build: ${{ steps.release.outputs.tag }}"
 
-          git tag "${{ steps.routing.outputs.tag }}"
+          git tag "${{ steps.release.outputs.tag }}"
 
-          git push origin HEAD --follow-tags
+          # Sync once more before pushing.
+          # This prevents the usual "fetch first" error if main
+          # received another commit while the build was running.
+          git fetch origin main
 
-      - name: Publish GitHub Release
-        if: steps.changes.outputs.skip == 'false'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.routing.outputs.tag }}
-          files: |
-            release/geosite.dat
-            release/geoip.dat
+          git rebase origin/main
+
+          # Push commit and tag.
+          git push origin HEAD:main --follow-tags
