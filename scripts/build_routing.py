@@ -1,24 +1,28 @@
-```python
 #!/usr/bin/env python3
 """
-Собирает профили маршрутизации из общего шаблона:
+Собирает итоговые профили маршрутизации из общего шаблона:
 
-HAPP/
-  ROUTING.JSON
-  ROUTING.DEEPLINK
-  ROUTING.ONADD.DEEPLINK
+  HAPP/ROUTING.JSON
+  HAPP/ROUTING.DEEPLINK
+  HAPP/ROUTING.ONADD.DEEPLINK
 
-INCY/
-  ROUTING.JSON
-  ROUTING.ONADD.DEEPLINK
+  INCY/ROUTING.JSON
+  INCY/ROUTING.ONADD.DEEPLINK
 
 Источник:
   config/routing-template.json
 
+Все правила маршрутизации берутся из одного шаблона.
+Поэтому добавление домена в routing-template.json
+автоматически попадает и в Happ, и в INCY.
+
 Использование:
+
   python3 scripts/build_routing.py \
       --repo prorocksvp/prorocks \
-      --tag 202609281200
+      --tag 202609280818
+
+В GitHub Actions --repo берётся из GITHUB_REPOSITORY.
 """
 
 import argparse
@@ -31,7 +35,10 @@ from pathlib import Path
 
 
 def encode_config(cfg: dict) -> str:
-    """JSON -> Base64 для deeplink."""
+    """
+    Кодирует JSON-конфигурацию в Base64
+    для deeplink.
+    """
 
     data = json.dumps(
         cfg,
@@ -43,6 +50,10 @@ def encode_config(cfg: dict) -> str:
 
 
 def write_json(path: Path, cfg: dict) -> None:
+    """
+    Записывает JSON с красивым форматированием.
+    """
+
     path.parent.mkdir(parents=True, exist_ok=True)
 
     path.write_text(
@@ -56,78 +67,103 @@ def write_json(path: Path, cfg: dict) -> None:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser()
-
-    ap.add_argument(
-        "--template",
-        default="config/routing-template.json"
+    parser = argparse.ArgumentParser(
+        description="Build Happ and INCY routing profiles"
     )
 
-    ap.add_argument(
+    parser.add_argument(
+        "--template",
+        default="config/routing-template.json",
+        help="Путь к общему шаблону маршрутизации"
+    )
+
+    parser.add_argument(
         "--repo",
         default=os.environ.get("GITHUB_REPOSITORY"),
-        help="USER/REPO на GitHub"
+        help="GitHub repository в формате USER/REPO"
     )
 
-    ap.add_argument(
+    parser.add_argument(
         "--tag",
         required=True,
-        help="тег сборки"
+        help="Тег текущей сборки"
     )
 
-    ap.add_argument(
+    parser.add_argument(
         "--last-updated",
-        default=str(int(time.time()))
+        default=str(int(time.time())),
+        help="Значение LastUpdated"
     )
 
-    args = ap.parse_args()
+    parser.add_argument(
+        "--happ-outdir",
+        default="HAPP",
+        help="Каталог результата Happ"
+    )
+
+    parser.add_argument(
+        "--incy-outdir",
+        default="INCY",
+        help="Каталог результата INCY"
+    )
+
+    args = parser.parse_args()
 
     # ---------------------------------------------------------
-    # Проверяем repo
+    # Проверка репозитория
     # ---------------------------------------------------------
 
     if not args.repo or "/" not in args.repo:
         print(
             "Ошибка: укажите --repo USER/REPO "
-            "(или запускайте через GitHub Actions)",
+            "(или запускайте скрипт в GitHub Actions)",
             file=sys.stderr
         )
         return 1
 
     # ---------------------------------------------------------
-    # Читаем общий шаблон
+    # Читаем шаблон
     # ---------------------------------------------------------
 
-    template = Path(args.template)
+    template_path = Path(args.template)
 
-    if not template.exists():
+    if not template_path.exists():
         print(
-            f"Ошибка: файл не найден: {template}",
+            f"Ошибка: шаблон не найден: {template_path}",
             file=sys.stderr
         )
         return 1
 
     try:
         cfg = json.loads(
-            template.read_text(encoding="utf-8")
+            template_path.read_text(encoding="utf-8")
         )
-    except json.JSONDecodeError as e:
+    except json.JSONDecodeError as error:
         print(
-            f"Ошибка JSON в {template}: {e}",
+            f"Ошибка JSON в {template_path}: {error}",
+            file=sys.stderr
+        )
+        return 1
+
+    if not isinstance(cfg, dict):
+        print(
+            "Ошибка: корень routing-template.json должен быть JSON-объектом",
             file=sys.stderr
         )
         return 1
 
     # ---------------------------------------------------------
-    # Общие параметры
+    # Формируем ссылки на geosite.dat / geoip.dat
     # ---------------------------------------------------------
 
-    # Стабильная ссылка.
+    # Используем main, поэтому URL остаётся постоянным.
     #
-    # main/release/geosite.dat
-    # main/release/geoip.dat
+    # После новой сборки содержимое:
     #
-    # При обновлении файлов ссылка не меняется.
+    #   release/geosite.dat
+    #   release/geoip.dat
+    #
+    # меняется, но URL остаётся тем же.
 
     base = (
         f"https://cdn.jsdelivr.net/gh/"
@@ -137,24 +173,37 @@ def main() -> int:
     cfg["Geositeurl"] = f"{base}/geosite.dat"
     cfg["Geoipurl"] = f"{base}/geoip.dat"
 
-    # Обновляем timestamp при каждой сборке.
-    cfg["LastUpdated"] = args.last_updated
+    # Меняем время обновления при каждой сборке.
+    cfg["LastUpdated"] = str(args.last_updated)
+
+    # ---------------------------------------------------------
+    # Создаём отдельные копии конфигурации
+    # ---------------------------------------------------------
+
+    # Сейчас формат routing-template.json совместим
+    # одновременно с Happ и INCY.
+    #
+    # Используем отдельные dict, чтобы в дальнейшем
+    # форматы можно было изменять независимо.
+
+    happ_cfg = dict(cfg)
+    incy_cfg = dict(cfg)
 
     # ---------------------------------------------------------
     # HAPP
     # ---------------------------------------------------------
 
-    happ_dir = Path("HAPP")
+    happ_dir = Path(args.happ_outdir)
     happ_dir.mkdir(parents=True, exist_ok=True)
 
-    # JSON
+    # Итоговый JSON
     write_json(
         happ_dir / "ROUTING.JSON",
-        cfg
+        happ_cfg
     )
 
-    # Base64
-    happ_b64 = encode_config(cfg)
+    # Base64 для deeplink
+    happ_b64 = encode_config(happ_cfg)
 
     # Ручное добавление
     (happ_dir / "ROUTING.DEEPLINK").write_text(
@@ -162,7 +211,7 @@ def main() -> int:
         encoding="utf-8"
     )
 
-    # Автоматическое добавление/обновление
+    # Автоматическое добавление
     (happ_dir / "ROUTING.ONADD.DEEPLINK").write_text(
         f"happ://routing/onadd/{happ_b64}\n",
         encoding="utf-8"
@@ -172,53 +221,84 @@ def main() -> int:
     # INCY
     # ---------------------------------------------------------
 
-    incy_dir = Path("INCY")
+    incy_dir = Path(args.incy_outdir)
     incy_dir.mkdir(parents=True, exist_ok=True)
 
-    # Тот же JSON, что и для Happ.
-    #
-    # Все DirectSites / ProxySites / BlockSites
-    # и остальные параметры берутся из одного шаблона.
+    # Итоговый JSON
     write_json(
         incy_dir / "ROUTING.JSON",
-        cfg
+        incy_cfg
     )
 
-    # INCY использует:
+    # Base64 для INCY
+    incy_b64 = encode_config(incy_cfg)
+
+    # INCY использует именно:
     #
     # incy://routing/onadd/{base64}
     #
-    incy_b64 = encode_config(cfg)
-
     (incy_dir / "ROUTING.ONADD.DEEPLINK").write_text(
         f"incy://routing/onadd/{incy_b64}\n",
         encoding="utf-8"
     )
 
     # ---------------------------------------------------------
-    # Вывод
+    # Проверяем, что основные массивы существуют
+    # ---------------------------------------------------------
+
+    routing_fields = (
+        "DirectSites",
+        "DirectIp",
+        "ProxySites",
+        "ProxyIp",
+        "BlockSites",
+        "BlockIp",
+    )
+
+    for field in routing_fields:
+        if field not in cfg:
+            print(
+                f"Предупреждение: поле {field} отсутствует "
+                f"в {template_path}",
+                file=sys.stderr
+            )
+
+    # ---------------------------------------------------------
+    # Информация о сборке
     # ---------------------------------------------------------
 
     print()
     print("========================================")
-    print(" Routing profiles successfully generated")
+    print("Routing profiles successfully generated")
     print("========================================")
     print()
 
-    print(f"Profile: {cfg.get('Name')}")
-    print(f"Tag: {args.tag}")
+    print(f"Profile:     {cfg.get('Name', 'Unknown')}")
+    print(f"Repository:  {args.repo}")
+    print(f"Tag:         {args.tag}")
     print(f"LastUpdated: {args.last_updated}")
     print()
 
     print("HAPP:")
-    print("  HAPP/ROUTING.JSON")
-    print("  HAPP/ROUTING.DEEPLINK")
-    print("  HAPP/ROUTING.ONADD.DEEPLINK")
+    print(f"  {happ_dir / 'ROUTING.JSON'}")
+    print(f"  {happ_dir / 'ROUTING.DEEPLINK'}")
+    print(f"  {happ_dir / 'ROUTING.ONADD.DEEPLINK'}")
     print()
 
     print("INCY:")
-    print("  INCY/ROUTING.JSON")
-    print("  INCY/ROUTING.ONADD.DEEPLINK")
+    print(f"  {incy_dir / 'ROUTING.JSON'}")
+    print(f"  {incy_dir / 'ROUTING.ONADD.DEEPLINK'}")
+    print()
+
+    # Показываем количество правил
+    print("Routing rules:")
+
+    for field in routing_fields:
+        value = cfg.get(field, [])
+
+        if isinstance(value, list):
+            print(f"  {field}: {len(value)}")
+
     print()
 
     return 0
@@ -226,4 +306,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-```
