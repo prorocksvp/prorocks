@@ -73,6 +73,12 @@
     "domain:login.mos.ru",
     "domain:nalog.ru",
 
+    "geosite:psb",
+    "domain:psbank.ru",
+    "domain:psb.ru",
+    "domain:promsvyazbank.ru",
+
+
     "domain:vk.com",
     "domain:vk.ru",
     "domain:ok.ru",
