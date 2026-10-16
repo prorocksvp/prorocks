@@ -35,35 +35,6 @@
     "geosite:category-ru",
     "geosite:whitelist",
 
-    "domain:soundcloud.com",
-    "domain:www.soundcloud.com",
-    "domain:api.soundcloud.com",
-    "domain:api-v2.soundcloud.com",
-    "domain:api-auth.soundcloud.com",
-    "domain:secure.soundcloud.com",
-    "domain:m.soundcloud.com",
-    "domain:graph.soundcloud.com",
-    "domain:events-api.soundcloud.com",
-    "domain:eventgateway.soundcloud.com",
-    "domain:eventlogger.soundcloud.com",
-    "domain:telemetry.soundcloud.com",
-    "domain:promoted.soundcloud.com",
-    "domain:dwt.soundcloud.com",
-    "domain:invite.soundcloud.com",
-    "domain:sndcdn.com",
-    "domain:a-v2.sndcdn.com",
-    "domain:i1.sndcdn.com",
-    "domain:cf-hls-media.sndcdn.com",
-    "domain:cf-hls-opus-media.sndcdn.com",
-    "domain:assets.web.soundcloud.cloud",
-    "domain:soundcloud.cloud",
-    "domain:d15wdfb2rw9n2y.cloudfront.net",
-    "domain:d1hcxlifzhxzha.cloudfront.net",
-    "domain:d1ws1c3tu8ejje.cloudfront.net",
-    "domain:d2gff659so2qub.cloudfront.net",
-    "domain:d36lkcxq7qra7v.cloudfront.net",
-    "domain:dezyktpp25vyb.cloudfront.net",
-
     "domain:gosuslugi.ru",
     "domain:mos.ru",
     "domain:nalog.ru",
@@ -76,7 +47,6 @@
     "domain:psbank.ru",
     "domain:psb.ru",
     "domain:promsvyazbank.ru",
-
 
     "domain:vk.com",
     "domain:vk.ru",
@@ -98,8 +68,7 @@
     "geosite:escapefromtarkov",
     "geosite:faceit",
     "geosite:twitch",
-    "geosite:pinterest",
-    "geosite:soundcloud"
+    "geosite:pinterest"
   ],
 
   "DirectIp": [
@@ -109,6 +78,14 @@
   ],
 
   "ProxySites": [
+    "geosite:soundcloud",
+    "domain:d15wdfb2rw9n2y.cloudfront.net",
+    "domain:d1hcxlifzhxzha.cloudfront.net",
+    "domain:d1ws1c3tu8ejje.cloudfront.net",
+    "domain:d2gff659so2qub.cloudfront.net",
+    "domain:d36lkcxq7qra7v.cloudfront.net",
+    "domain:dezyktpp25vyb.cloudfront.net",
+
     "geosite:youtube",
     "domain:youtube.com",
     "domain:youtu.be",
