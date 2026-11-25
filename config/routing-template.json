@@ -1,4 +1,3 @@
-
 {
   "Name": "ProRocks routing",
   "GlobalProxy": "true",
@@ -39,15 +38,33 @@
 
     "domain:gosuslugi.ru",
     "domain:mos.ru",
-    "domain:nalog.ru",
     "domain:parking.mos.ru",
     "domain:transport.mos.ru",
     "domain:dt.mos.ru",
     "domain:login.mos.ru",
 
     "domain:psbank.ru",
+    "domain:business.psbank.ru",
     "domain:psb.ru",
     "domain:promsvyazbank.ru",
+
+    "domain:vtb.ru",
+    "domain:vtb.com",
+    "domain:vtb24.ru",
+
+    "domain:sber.ru",
+    "domain:sberbank.ru",
+    "domain:sberbank.com",
+    "domain:sbrf.ru",
+    "domain:sberbank1.ru",
+    "domain:sberbankaktivno.ru",
+    "domain:sberindex.ru",
+    "domain:sbersova.ru",
+    "domain:sberprime.sber.ru",
+    "domain:sbertv.ru",
+    "domain:pokupay.ru",
+
+    "domain:vkusnoitochka.ru",
 
     "domain:vk.com",
     "domain:vk.ru",
