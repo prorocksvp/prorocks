@@ -5,7 +5,7 @@
   "RemoteDns": "94.140.14.140",
   "DomesticDns": "77.88.8.8",
   "RemoteDNSType": "DoH",
-  "RemoteDNSDomain": "https://unfiltered.adguard-dns.com/dns-query",
+  "RemoteDNSDomain": "https://dns-unfiltered.adguard.com/dns-query",
   "RemoteDNSIP": "94.140.14.140",
   "DomesticDNSType": "DoH",
   "DomesticDNSDomain": "https://77.88.8.8/dns-query",
@@ -16,7 +16,7 @@
   "DnsHosts": {
     "lkfl2.nalog.ru": "213.24.64.175",
     "lknpd.nalog.ru": "213.24.64.181",
-    "unfiltered.adguard-dns.com": "94.140.14.140"
+    "dns-unfiltered.adguard.com": "94.140.14.140"
   },
   "RouteOrder": "block-proxy-direct",
   "DirectSites": [
@@ -44,6 +44,17 @@
     "domain:sberbank.ru",
     "domain:sberbank.com",
     "domain:sbrf.ru",
+    "domain:sberbank1.ru",
+    "domain:sberbankaktivno.ru",
+    "domain:sberindex.ru",
+    "domain:sberprime.sber.ru",
+    "domain:sbersova.ru",
+    "domain:sbertv.ru",
+    "domain:clickstream.ru",
+    "domain:sberclickstream.ru",
+    "domain:sberminor.ru",
+    "domain:portal-da.ru",
+    "domain:pokupay.ru",
     "domain:vkusnoitochka.ru",
     "domain:vk.com",
     "domain:vk.ru",
