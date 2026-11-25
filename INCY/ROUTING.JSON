@@ -2,20 +2,21 @@
   "Name": "ProRocks routing",
   "GlobalProxy": "true",
   "UseChunkFiles": "true",
-  "RemoteDns": "8.8.8.8",
+  "RemoteDns": "9.9.9.12",
   "DomesticDns": "77.88.8.8",
   "RemoteDNSType": "DoH",
-  "RemoteDNSDomain": "https://8.8.8.8/dns-query",
-  "RemoteDNSIP": "8.8.8.8",
+  "RemoteDNSDomain": "https://dns12.quad9.net/dns-query",
+  "RemoteDNSIP": "9.9.9.12",
   "DomesticDNSType": "DoH",
   "DomesticDNSDomain": "https://77.88.8.8/dns-query",
   "DomesticDNSIP": "77.88.8.8",
   "Geositeurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@main/release/geosite.dat",
   "Geoipurl": "https://cdn.jsdelivr.net/gh/prorocksvp/prorocks@main/release/geoip.dat",
-  "LastUpdated": "1795634020",
+  "LastUpdated": "1795635766",
   "DnsHosts": {
     "lkfl2.nalog.ru": "213.24.64.175",
-    "lknpd.nalog.ru": "213.24.64.181"
+    "lknpd.nalog.ru": "213.24.64.181",
+    "dns12.quad9.net": "9.9.9.12"
   },
   "RouteOrder": "block-proxy-direct",
   "DirectSites": [
